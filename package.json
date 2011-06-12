@@ -1,0 +1,13 @@
+{
+    "name": "streamingbuffer",
+    "version": "1.0.0",
+    "description": "Obtain lines and fixed-length buffers from an incoming stream",
+    "author": "Konstantin Käfer <kkaefer@gmail.com>",
+    "licenses": [ { "type:": "BSD" } ],
+
+    "main": "./streamingbuffer",
+
+    "devDependencies": {
+        "expresso" : "0.7.x"
+    }
+}
