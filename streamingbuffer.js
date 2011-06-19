@@ -1,20 +1,43 @@
+var EventEmitter = require('events').EventEmitter;
 exports = module.exports = StreamingBuffer;
 
 function noop() {}
 
-require('util').inherits(StreamingBuffer, require('events').EventEmitter);
+require('util').inherits(StreamingBuffer, EventEmitter);
 function StreamingBuffer() {
     if (!(this instanceof StreamingBuffer)) return new StreamingBuffer();
+    EventEmitter.call(this);
 
     this.buffers = [];
     this.queue = [];
     this.process = this.process.bind(this);
 }
 
-StreamingBuffer.prototype.push = function(buffer) {
+// Emulate the buffer interface so that we can pipe into a StreamingBuffer.
+StreamingBuffer.prototype.readable = true;
+StreamingBuffer.prototype.writable = true;
+
+StreamingBuffer.prototype.write = function(buffer) {
     this.buffers.push(buffer);
     process.nextTick(this.process);
 };
+
+StreamingBuffer.prototype.end = function() {
+    this.readable = false;
+    this.writable = false;
+};
+
+StreamingBuffer.prototype.destroy = function() {
+    this.buffers = [];
+    this.queue = [];
+    this.end();
+};
+
+StreamingBuffer.prototype.destroySoon = StreamingBuffer.prototype.destroy;
+
+StreamingBuffer.prototype.pause = noop;
+StreamingBuffer.prototype.resume = noop;
+StreamingBuffer.prototype.pipe = noop;
 
 StreamingBuffer.prototype.process = function() {
     while (this.queue.length) {
@@ -46,7 +69,6 @@ StreamingBuffer.prototype.process = function() {
         }
     }
 };
-
 
 /**
  * Gets the next line up to CRLF.
