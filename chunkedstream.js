@@ -1,11 +1,11 @@
 var EventEmitter = require('events').EventEmitter;
-exports = module.exports = StreamingBuffer;
+exports = module.exports = ChunkedStream;
 
 function noop() {}
 
-require('util').inherits(StreamingBuffer, EventEmitter);
-function StreamingBuffer() {
-    if (!(this instanceof StreamingBuffer)) return new StreamingBuffer();
+require('util').inherits(ChunkedStream, EventEmitter);
+function ChunkedStream() {
+    if (!(this instanceof ChunkedStream)) return new ChunkedStream();
     EventEmitter.call(this);
 
     this.buffers = [];
@@ -13,33 +13,33 @@ function StreamingBuffer() {
     this.process = this.process.bind(this);
 }
 
-// Emulate the buffer interface so that we can pipe into a StreamingBuffer.
-StreamingBuffer.prototype.readable = true;
-StreamingBuffer.prototype.writable = true;
+// Emulate the buffer interface so that we can pipe into a ChunkedStream.
+ChunkedStream.prototype.readable = true;
+ChunkedStream.prototype.writable = true;
 
-StreamingBuffer.prototype.write = function(buffer) {
+ChunkedStream.prototype.write = function(buffer) {
     this.buffers.push(buffer);
     process.nextTick(this.process);
 };
 
-StreamingBuffer.prototype.end = function() {
+ChunkedStream.prototype.end = function() {
     this.readable = false;
     this.writable = false;
 };
 
-StreamingBuffer.prototype.destroy = function() {
+ChunkedStream.prototype.destroy = function() {
     this.buffers = [];
     this.queue = [];
     this.end();
 };
 
-StreamingBuffer.prototype.destroySoon = StreamingBuffer.prototype.destroy;
+ChunkedStream.prototype.destroySoon = ChunkedStream.prototype.destroy;
 
-StreamingBuffer.prototype.pause = noop;
-StreamingBuffer.prototype.resume = noop;
-StreamingBuffer.prototype.pipe = noop;
+ChunkedStream.prototype.pause = noop;
+ChunkedStream.prototype.resume = noop;
+ChunkedStream.prototype.pipe = noop;
 
-StreamingBuffer.prototype.process = function() {
+ChunkedStream.prototype.process = function() {
     while (this.queue.length) {
         var task = this.queue[0];
         if (task.type === 'line') {
@@ -76,7 +76,7 @@ StreamingBuffer.prototype.process = function() {
  * @return
  *   The line when there is one, undefined otherwise.
  */
-StreamingBuffer.prototype._nextLine = function() {
+ChunkedStream.prototype._nextLine = function() {
     var bid = 0;
     var buffer = this.buffers[bid];
 
@@ -124,7 +124,7 @@ StreamingBuffer.prototype._nextLine = function() {
     }
 };
 
-StreamingBuffer.prototype.getLine = function(complete) {
+ChunkedStream.prototype.getLine = function(complete) {
     this.queue.push({
         type: 'line',
         complete: complete || noop
@@ -132,7 +132,7 @@ StreamingBuffer.prototype.getLine = function(complete) {
     process.nextTick(this.process);
 };
 
-StreamingBuffer.prototype.getBytes = function(bytes, chunk, complete) {
+ChunkedStream.prototype.getBytes = function(bytes, chunk, complete) {
     if (!bytes) {
         // Filter out requests for 0 bytes.
         (complete || noop)();

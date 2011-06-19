@@ -1,11 +1,11 @@
 var assert = require('assert');
 var net = require('net');
-var StreamingBuffer = require('..');
+var ChunkedStream = require('..');
 var Buffer = require('buffer').Buffer;
 
 
-exports['test StreamingBuffer'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this is a test\r\n'));
     sb.write(new Buffer('the next line continues\r\n here'));
 
@@ -14,15 +14,15 @@ exports['test StreamingBuffer'] = function() {
 };
 
 
-exports['test StreamingBuffer without input'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream without input'] = function() {
+    var sb = new ChunkedStream();
 
     assert.isUndefined(sb._nextLine());
 };
 
 
-exports['test StreamingBuffer without empty lines'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream without empty lines'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this contains\r\n\r\nan empty line\r\n'));
 
     assert.equal('this contains\r\n', sb._nextLine());
@@ -31,8 +31,8 @@ exports['test StreamingBuffer without empty lines'] = function() {
 };
 
 
-exports['test StreamingBuffer with line spread over multiple buffers'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with line spread over multiple buffers'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string '));
     sb.write(new Buffer('is spread over '));
     sb.write(new Buffer('multiple buffers\r\n'));
@@ -43,8 +43,8 @@ exports['test StreamingBuffer with line spread over multiple buffers'] = functio
 };
 
 
-exports['test StreamingBuffer with CRLF in two buffers'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with CRLF in two buffers'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string has \r'));
     sb.write(new Buffer('\n spread over multiple buffers\r\n'));
 
@@ -53,16 +53,16 @@ exports['test StreamingBuffer with CRLF in two buffers'] = function() {
 };
 
 
-exports['test StreamingBuffer with missing LF at end'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with missing LF at end'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string has \r'));
 
     assert.isUndefined(sb._nextLine());
 };
 
 
-exports['test StreamingBuffer with LF at buffer boundary'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with LF at buffer boundary'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string has \r'));
     sb.write(new Buffer(' and continues here\r\n'));
 
@@ -70,8 +70,8 @@ exports['test StreamingBuffer with LF at buffer boundary'] = function() {
 };
 
 
-exports['test StreamingBuffer with missing CRLF'] = function() {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with missing CRLF'] = function() {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string has one line\r\n'));
     sb.write(new Buffer('but not another'));
 
@@ -80,8 +80,8 @@ exports['test StreamingBuffer with missing CRLF'] = function() {
 };
 
 
-exports['test StreamingBuffer fixed byte length callback'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream fixed byte length callback'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var dataReceived = [];
     var id = +new Date;
     var completeCallback = false;
@@ -108,8 +108,8 @@ exports['test StreamingBuffer fixed byte length callback'] = function(beforeExit
 };
 
 
-exports['test StreamingBuffer fixed byte length that can be satisfied from initial buffer'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream fixed byte length that can be satisfied from initial buffer'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var dataReceived;
     var completeCallback = false;
 
@@ -129,8 +129,8 @@ exports['test StreamingBuffer fixed byte length that can be satisfied from initi
 };
 
 
-exports['test StreamingBuffer fixed byte length request with 0 bytes'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream fixed byte length request with 0 bytes'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     sb.write(new Buffer('this string is never requested\r\n'));
     var completeCallback = false;
 
@@ -147,8 +147,8 @@ exports['test StreamingBuffer fixed byte length request with 0 bytes'] = functio
 };
 
 
-exports['test StreamingBuffer getLine'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream getLine'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var data = [];
 
     setTimeout(function() { sb.write(new Buffer('this text is spread ')); }, 100);
@@ -169,8 +169,8 @@ exports['test StreamingBuffer getLine'] = function(beforeExit) {
 };
 
 
-exports['test StreamingBuffer getLine satisfied from initial buffers'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream getLine satisfied from initial buffers'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var data = [];
 
     sb.write(new Buffer('this text is spread '));
@@ -191,8 +191,8 @@ exports['test StreamingBuffer getLine satisfied from initial buffers'] = functio
 };
 
 
-exports['test StreamingBuffer fixed length and line concurrently'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream fixed length and line concurrently'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var buffers1 = [], buffers2 = [], buffers3 = [], buffers4 = [];
     var lines = [];
 
@@ -223,8 +223,8 @@ exports['test StreamingBuffer fixed length and line concurrently'] = function(be
 };
 
 
-exports['test StreamingBuffer fixed byte length with lots of data'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream fixed byte length with lots of data'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var completeCallback = false;
     var sent = new Buffer(60000);
 
@@ -258,8 +258,8 @@ exports['test StreamingBuffer fixed byte length with lots of data'] = function(b
 };
 
 
-exports['test StreamingBuffer with net.Socket'] = function(beforeExit) {
-    var sb = new StreamingBuffer();
+exports['test ChunkedStream with net.Socket'] = function(beforeExit) {
+    var sb = new ChunkedStream();
     var completeCallback = false;
     var data = [];
 
